@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="小范食堂">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>小范食堂 · 家常菜点单</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='120' fill='%23FF8FA3'/><text x='256' y='320' font-size='320' text-anchor='middle'>🍚</text><text x='256' y='455' font-size='80' text-anchor='middle' fill='white' font-family='sans-serif'>小范食堂</text></svg>">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='120' fill='%23FF8FA3'/><text x='256' y='300' font-size='300' text-anchor='middle'>🍚</text></svg>">
+<style>
+:root{
+  --pink:#FF8FA3; --pink2:#FFB3C1; --cream:#FFF5F6; --ink:#5A3A3A;
+  --green:#7FC8A9; --yellow:#FFD56B; --purple:#B5A6E6; --blue:#8EC5E8;
+  --card:#FFFFFF; --line:#FADBE2; --shadow:0 6px 20px rgba(255,143,163,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, #FFE3E9 0, transparent 42%),
+    radial-gradient(circle at 88% 92%, #E3F4EC 0, transparent 45%),
+    linear-gradient(180deg,#FFF5F6,#FFF0F3);
+  color:var(--ink);overflow:hidden;position:fixed;inset:0;
+}
+.floaty{position:fixed;font-size:30px;opacity:.55;z-index:0;animation:float 6s ease-in-out infinite;}
+.floaty:nth-child(1){top:6%;left:4%;animation-delay:0s;}
+.floaty:nth-child(2){top:18%;right:5%;animation-delay:1.2s;font-size:24px;}
+.floaty:nth-child(3){bottom:12%;left:6%;animation-delay:2.4s;font-size:26px;}
+.floaty:nth-child(4){bottom:22%;right:7%;animation-delay:.8s;font-size:22px;}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-6deg);}50%{transform:translateY(-14px) rotate(6deg);}}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;}
+
+header{
+  flex:0 0 auto;padding:calc(12px + env(safe-area-inset-top)) 14px 10px;
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  color:#fff;border-radius:0 0 26px 26px;box-shadow:var(--shadow);
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo{font-size:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15));}
+.brand h1{font-size:22px;letter-spacing:1px;text-shadow:0 2px 4px rgba(0,0,0,.12);}
+.brand small{display:block;font-size:11px;opacity:.9;font-weight:400;}
+.rolebar{display:flex;gap:10px;margin-top:12px;}
+.rolebtn{
+  flex:1;padding:11px;border:none;border-radius:16px;font-size:14px;font-weight:700;
+  background:rgba(255,255,255,.3);color:#fff;transition:.2s;
+}
+.rolebtn.on{background:#fff;color:var(--pink);box-shadow:0 4px 12px rgba(0,0,0,.12);transform:translateY(-1px);}
+
+.main{flex:1;display:flex;min-height:0;padding:10px 0 0;}
+.cats{flex:0 0 96px;overflow-y:auto;padding:4px 8px 20px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;}
+.cats::-webkit-scrollbar{display:none;}
+.cat{
+  border:none;background:var(--card);border-radius:20px;padding:14px 4px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-size:12px;font-weight:700;color:var(--ink);box-shadow:0 3px 10px rgba(255,143,163,.14);transition:.2s;
+}
+.cat .ci{font-size:26px;}
+.cat.on{color:#fff;transform:scale(1.06);}
+.cat.on::after{content:'🌸';position:absolute;top:-8px;right:-6px;font-size:16px;}
+.list{flex:1;overflow-y:auto;padding:4px 14px 20px;-webkit-overflow-scrolling:touch;}
+.list::-webkit-scrollbar{display:none;}
+.sec-title{font-size:15px;font-weight:800;margin:6px 0 12px;display:flex;align-items:center;gap:6px;}
+.sec-title span{font-size:12px;font-weight:400;opacity:.6;}
+
+.dish{
+  background:var(--card);border-radius:22px;padding:14px;margin-bottom:14px;
+  box-shadow:0 4px 14px rgba(255,143,163,.16);position:relative;
+  border:2px solid transparent;
+}
+.dish.bump{border-color:var(--pink);}
+.dish-top{display:flex;align-items:flex-start;gap:12px;}
+.thumb{
+  flex:0 0 66px;height:66px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+  font-size:34px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.6);
+}
+.info{flex:1;min-width:0;}
+.info h3{font-size:16px;margin-bottom:6px;}
+.cost-line{font-size:11px;color:#a08585;line-height:1.5;background:var(--cream);border-radius:10px;padding:7px 9px;}
+.cost-line b{color:var(--pink);}
+.ings{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px;}
+.ing-chip{
+  font-size:10px;padding:3px 8px;border-radius:20px;background:var(--cream);
+  color:#8a6a6a;font-weight:600;border:1px solid var(--line);
+}
+.price-row{display:flex;align-items:baseline;gap:3px;margin-top:10px;}
+.price-row .yen{font-size:13px;font-weight:800;color:var(--pink);}
+.price-row .num{font-size:25px;font-weight:900;color:var(--pink);}
+.price-row .unit{font-size:11px;opacity:.6;margin-left:3px;}
+.qty{display:flex;align-items:center;gap:8px;margin-left:4px;}
+.qty button{width:34px;height:34px;border:none;border-radius:50%;font-size:20px;font-weight:800;background:var(--cream);color:var(--pink);box-shadow:0 2px 6px rgba(255,143,163,.25);}
+.qty .n{font-size:17px;font-weight:800;min-width:18px;text-align:center;}
+.empty{text-align:center;padding:60px 20px;opacity:.5;}
+.empty .big{font-size:60px;display:block;margin-bottom:12px;}
+
+.cartbar{flex:0 0 auto;padding:8px 14px calc(10px + env(safe-area-inset-bottom));}
+.cart-inner{background:#fff;border-radius:22px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 -4px 18px rgba(255,143,163,.2);position:relative;}
+.cart-inner.hidden{display:none;}
+.cart-badge{position:absolute;top:-8px;left:44px;background:var(--pink);color:#fff;font-size:11px;min-width:20px;height:20px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-weight:800;padding:0 5px;}
+.cart-info{flex:1;min-width:0;}
+.cart-info .ttl{font-size:13px;font-weight:700;}
+.cart-info .sub{font-size:11px;opacity:.6;}
+.cart-total{font-weight:900;font-size:18px;color:var(--pink);}
+.submit{border:none;border-radius:16px;padding:11px 18px;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--pink),var(--pink2));box-shadow:0 4px 12px rgba(255,143,163,.4);}
+
+.kitchen{display:none;flex:1;flex-direction:column;min-height:0;}
+.kitchen.show{display:flex;}
+.kit-body{flex:1;overflow-y:auto;padding:6px 14px 20px;-webkit-overflow-scrolling:touch;}
+.kit-body::-webkit-scrollbar{display:none;}
+.order-card{background:#fff;border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(255,143,163,.16);}
+.order-card.new{animation:pop .5s;}
+@keyframes pop{0%{transform:scale(.85);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.oc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.oc-time{font-size:13px;font-weight:800;}
+.oc-status{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;}
+.status-new{background:#FFE3E9;color:var(--pink);}
+.status-done{background:#E3F4EC;color:var(--green);}
+.oc-item{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;border-bottom:1px dashed var(--line);}
+.ings-box{margin-top:12px;padding:12px;background:var(--cream);border-radius:16px;}
+.ings-box h4{font-size:12px;margin-bottom:8px;display:flex;align-items:center;gap:4px;}
+.ing-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;}
+.ing-row .amt{color:var(--pink);font-weight:700;}
+.kc-foot{display:flex;gap:8px;margin-top:12px;}
+.kc-foot button{flex:1;border:none;border-radius:14px;padding:10px;font-size:13px;font-weight:800;}
+.btn-done{background:linear-gradient(135deg,var(--green),#A8DCC4);color:#fff;}
+.btn-del{background:var(--cream);color:#d98898;}
+.note{font-size:12px;opacity:.55;text-align:center;padding:6px 0 16px;line-height:1.7;}
+
+.mask{position:fixed;inset:0;background:rgba(90,58,58,.4);z-index:50;display:none;align-items:flex-end;}
+.mask.show{display:flex;}
+.sheet{background:#fff;width:100%;border-radius:26px 26px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:86vh;overflow-y:auto;animation:slideup .3s;}
+@keyframes slideup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.sheet h2{font-size:19px;margin-bottom:4px;}
+.sheet .hint{font-size:12px;opacity:.55;margin-bottom:16px;}
+.oc-preview{background:var(--cream);border-radius:18px;padding:14px;margin-bottom:14px;}
+.oc-preview .row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;}
+.oc-preview .row.total{font-weight:900;font-size:17px;color:var(--pink);border-top:2px dashed var(--line);margin-top:6px;padding-top:10px;}
+.modal-actions{display:flex;gap:10px;margin-top:6px;}
+.modal-actions button{flex:1;border:none;border-radius:16px;padding:13px;font-size:15px;font-weight:800;}
+.btn-cancel{background:var(--cream);color:var(--ink);}
+.btn-ok{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#fff;}
+</style>
+</head>
+<body>
+<div class="floaty">🍅</div><div class="floaty">🥬</div><div class="floaty">🍄</div><div class="floaty">🥕</div>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <span class="logo">🍚</span>
+      <div>
+        <h1>小范食堂</h1>
+        <small>家常菜点单 · 配料市场价透明</small>
+      </div>
+    </div>
+    <div class="rolebar">
+      <button class="rolebtn on" data-role="cust">🙋 我要点菜</button>
+      <button class="rolebtn" data-role="chef">🧑‍🍳 接单台</button>
+    </div>
+  </header>
+
+  <div class="main" id="custView">
+    <div class="cats" id="cats"></div>
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="kitchen" id="kitView">
+    <div class="kit-body" id="kitBody"></div>
+  </div>
+
+  <div class="cartbar">
+    <div class="cart-inner hidden" id="cartInner">
+      <span style="font-size:30px">🧺</span>
+      <span class="cart-badge" id="cartBadge">0</span>
+      <div class="cart-info">
+        <div class="ttl" id="cartTtl">还没选菜哦</div>
+        <div class="sub" id="cartSub">挑几道想吃的吧～</div>
+      </div>
+      <span class="cart-total" id="cartTotal">￥0</span>
+      <button class="submit" id="submitBtn">去下单</button>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="mask">
+  <div class="sheet">
+    <h2>确认下单 🐰</h2>
+    <p class="hint">检查一下想吃的菜，可以留言给大厨</p>
+    <div id="previewBox"></div>
+    <input id="remark" placeholder="✏️ 想对大厨说点什么…（可选）" style="width:100%;border:2px solid var(--line);border-radius:14px;padding:12px;font-size:14px;margin-bottom:12px;outline:none;">
+    <div class="modal-actions">
+      <button class="btn-cancel" id="backBtn">再看看</button>
+      <button class="btn-ok" id="sendBtn">🍳 告诉大厨</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== 菜品数据 =====
+   ings: 完整配料清单（菜名 + 分量 + 市场单价/元）
+   price: 全部配料按市场价折算的合计（含油盐酱醋等基础调料，按一次用量估）
+   定价参考青岛家常菜市场零售价，油盐酱醋按单道菜实际用量估，不重复叠加
+*/
+const MENU = [
+ /* ===== 荤菜 ===== */
+ {id:'h1',name:'红烧肉',cat:'荤菜',emoji:'🥩',ings:[['五花肉','400g','22'],['冰糖','15g','0.5'],['生抽','15ml','0.5'],['老抽','5ml','0.3'],['料酒','15ml','0.5'],['姜片葱段','20g','0.5'],['八角','2颗','0.5'],['食用油','10ml','0.3']]},
+ {id:'h2',name:'宫保鸡丁',cat:'荤菜',emoji:'🍗',ings:[['鸡胸肉','250g','9'],['花生米','80g','4'],['干辣椒','8g','1'],['花椒','3g','0.5'],['葱段','40g','0.5'],['蒜末','10g','0.3'],['生抽','15ml','0.5'],['香醋','10ml','0.5'],['白糖','8g','0.3'],['食用油','20ml','0.6']]},
+ {id:'h3',name:'糖醋里脊',cat:'荤菜',emoji:'🍖',ings:[['猪里脊','300g','18'],['鸡蛋','1个','1'],['面粉','50g','0.5'],['淀粉','30g','0.5'],['白糖','30g','1'],['香醋','25ml','1.5'],['番茄酱','30g','1.5'],['食用油','300ml（实耗40ml）','2.4']]},
+ {id:'h4',name:'可乐鸡翅',cat:'荤菜',emoji:'🍗',ings:[['鸡中翅','8只','22'],['可乐','300ml','3'],['生抽','20ml','0.6'],['老抽','5ml','0.3'],['料酒','15ml','0.5'],['姜片','15g','0.4'],['食用油','10ml','0.3']]},
+ {id:'h5',name:'土豆炖牛腩',cat:'荤菜',emoji:'🍲',ings:[['牛腩','500g','55'],['土豆','300g','3'],['胡萝卜','150g','2'],['姜片葱段','25g','0.6'],['八角桂皮','2份','1'],['料酒','20ml','0.6'],['生抽老抽','25ml','1'],['食用油','15ml','0.4']]},
+ {id:'h6',name:'青椒肉丝',cat:'荤菜',emoji:'🫑',ings:[['瘦肉','250g','12'],['青椒','200g','4'],['生抽','15ml','0.5'],['料酒','10ml','0.3'],['淀粉','8g','0.2'],['蒜末','10g','0.3'],['食用油','20ml','0.6']]},
+ {id:'h7',name:'鱼香肉丝',cat:'荤菜',emoji:'🥕',ings:[['瘦肉','250g','12'],['木耳','80g（泡发）','3'],['笋丝','150g','4'],['胡萝卜','100g','1.5'],['泡椒','30g','2'],['豆瓣酱','15g','0.5'],['白糖','10g','0.4'],['香醋','15ml','0.8'],['食用油','25ml','0.8']]},
+ {id:'h8',name:'回锅肉',cat:'荤菜',emoji:'🥓',ings:[['五花肉','300g','18'],['青蒜','150g','3'],['豆瓣酱','20g','0.6'],['豆豉','10g','0.5'],['姜片','15g','0.4'],['料酒','10ml','0.3'],['食用油','15ml','0.4']]},
+ {id:'h9',name:'水煮肉片',cat:'荤菜',emoji:'🌶️',ings:[['瘦肉','300g','15'],['豆芽','250g','3'],['青菜','200g','3'],['干辣椒','15g','2'],['花椒','5g','1'],['豆瓣酱','25g','0.8'],['蒜末','15g','0.4'],['淀粉','10g','0.3'],['食用油','40ml','1.2']]},
+ {id:'h10',name:'西红柿牛腩',cat:'荤菜',emoji:'🍅',ings:[['牛腩','500g','55'],['番茄','400g','6'],['洋葱','150g','2'],['番茄酱','20g','1'],['姜片','15g','0.4'],['料酒','20ml','0.6'],['食用油','15ml','0.4']]},
+ {id:'h11',name:'啤酒鸭',cat:'荤菜',emoji:'🦆',ings:[['鸭肉','600g','36'],['啤酒','500ml','5'],['姜片','20g','0.5'],['蒜瓣','30g','1'],['干辣椒','10g','1.5'],['八角桂皮','2份','1'],['生抽老抽','25ml','1'],['食用油','20ml','0.6']]},
+ {id:'h12',name:'红烧排骨',cat:'荤菜',emoji:'🍖',ings:[['排骨','600g','45'],['冰糖','20g','0.7'],['生抽','20ml','0.6'],['老抽','5ml','0.3'],['料酒','20ml','0.6'],['姜片葱段','25g','0.6'],['八角','2颗','0.5'],['食用油','15ml','0.4']]},
+ {id:'h13',name:'清蒸鲈鱼',cat:'荤菜',emoji:'🐟',ings:[['鲈鱼','1条约600g','38'],['葱丝','50g','1'],['姜丝','30g','0.8'],['蒸鱼豉油','30ml','3'],['料酒','15ml','0.5'],['食用油','20ml','0.6']]},
+ {id:'h14',name:'蒜蓉虾',cat:'荤菜',emoji:'🦐',ings:[['基围虾','400g','48'],['蒜蓉','50g','2'],['粉丝','100g','3'],['小米辣','20g','1.5'],['生抽','20ml','0.6'],['食用油','20ml','0.6']]},
+ {id:'h15',name:'虾仁滑蛋',cat:'荤菜',emoji:'🍤',ings:[['虾仁','200g','26'],['鸡蛋','3个','3'],['料酒','10ml','0.3'],['淀粉','8g','0.2'],['盐','3g','0.1'],['食用油','25ml','0.8']]},
+ {id:'h16',name:'可乐排骨',cat:'荤菜',emoji:'🍖',ings:[['排骨','600g','45'],['可乐','330ml','3.5'],['生抽','20ml','0.6'],['老抽','5ml','0.3'],['姜片','15g','0.4'],['食用油','15ml','0.4']]},
+ {id:'h17',name:'香菇滑鸡',cat:'荤菜',emoji:'🍗',ings:[['鸡腿肉','400g','18'],['干香菇','60g','6'],['蚝油','20g','2'],['生抽','15ml','0.5'],['淀粉','10g','0.3'],['姜片','15g','0.4'],['食用油','20ml','0.6']]},
+ {id:'h18',name:'酱爆鸡丁',cat:'荤菜',emoji:'🍗',ings:[['鸡胸肉','300g','11'],['甜面酱','30g','2'],['黄瓜','150g','2'],['白糖','8g','0.3'],['料酒','10ml','0.3'],['食用油','20ml','0.6']]},
+ {id:'h19',name:'干煸四季豆',cat:'荤菜',emoji:'🫘',ings:[['四季豆','300g','6'],['肉末','100g','5'],['干辣椒','10g','1.5'],['芽菜','30g','2'],['蒜末姜末','15g','0.4'],['食用油','40ml','1.2']]},
+ {id:'h20',name:'椒盐排骨',cat:'荤菜',emoji:'🍖',ings:[['排骨','600g','45'],['鸡蛋','1个','1'],['淀粉','60g','0.8'],['椒盐粉','5g','1'],['料酒','15ml','0.5'],['食用油','300ml（实耗50ml）','3']]},
+
+ /* ===== 素菜 ===== */
+ {id:'s1',name:'番茄炒蛋',cat:'素菜',emoji:'🍅',ings:[['番茄','350g','5'],['鸡蛋','3个','3'],['白糖','5g','0.2'],['盐','3g','0.1'],['葱花','10g','0.3'],['食用油','25ml','0.8']]},
+ {id:'s2',name:'麻婆豆腐',cat:'素菜',emoji:'🥘',ings:[['嫩豆腐','400g','6'],['肉末','100g','5'],['豆瓣酱','25g','0.8'],['豆豉','10g','0.5'],['蒜末姜末','15g','0.4'],['花椒粉','3g','0.5'],['食用油','25ml','0.8']]},
+ {id:'s3',name:'酸辣土豆丝',cat:'素菜',emoji:'🥔',ings:[['土豆','400g','3'],['干辣椒','8g','1'],['花椒','3g','0.5'],['香醋','20ml','1'],['蒜末','10g','0.3'],['食用油','20ml','0.6']]},
+ {id:'s4',name:'地三鲜',cat:'素菜',emoji:'🍆',ings:[['茄子','300g','5'],['土豆','250g','2'],['青椒','150g','3'],['蒜末','10g','0.3'],['生抽','15ml','0.5'],['蚝油','10g','0.5'],['食用油','300ml（实耗40ml）','2.4']]},
+ {id:'s5',name:'干锅菜花',cat:'素菜',emoji:'🥦',ings:[['有机菜花','400g','7'],['五花肉','80g','4'],['干辣椒','8g','1'],['蒜片','10g','0.3'],['豆瓣酱','15g','0.5'],['食用油','25ml','0.8']]},
+ {id:'s6',name:'虎皮青椒',cat:'素菜',emoji:'🫑',ings:[['青椒','350g','7'],['蒜末','15g','0.4'],['生抽','15ml','0.5'],['香醋','10ml','0.5'],['白糖','5g','0.2'],['食用油','20ml','0.6']]},
+ {id:'s7',name:'蒜蓉西兰花',cat:'素菜',emoji:'🥦',ings:[['西兰花','400g','8'],['蒜末','20g','0.5'],['蚝油','15g','0.8'],['盐','3g','0.1'],['食用油','15ml','0.4']]},
+ {id:'s8',name:'家常豆腐',cat:'素菜',emoji:'🟨',ings:[['老豆腐','400g','5'],['青蒜','100g','2'],['豆瓣酱','20g','0.6'],['生抽','15ml','0.5'],['食用油','300ml（实耗40ml）','2.4']]},
+ {id:'s9',name:'手撕包菜',cat:'素菜',emoji:'🥬',ings:[['包菜','400g','4'],['干辣椒','8g','1'],['花椒','3g','0.5'],['蒜片','10g','0.3'],['香醋','10ml','0.5'],['食用油','20ml','0.6']]},
+ {id:'s10',name:'清炒时蔬',cat:'素菜',emoji:'🥬',ings:[['时令青菜','400g','5'],['蒜末','15g','0.4'],['盐','3g','0.1'],['食用油','15ml','0.4']]},
+ {id:'s11',name:'香菇油菜',cat:'素菜',emoji:'🍄',ings:[['油菜','350g','4'],['鲜香菇','150g','6'],['蚝油','15g','0.8'],['蒜末','10g','0.3'],['食用油','15ml','0.4']]},
+ {id:'s12',name:'凉拌黄瓜',cat:'素菜',emoji:'🥒',ings:[['黄瓜','400g','4'],['蒜末','15g','0.4'],['香油','10ml','0.5'],['香醋','15ml','0.8'],['盐','3g','0.1'],['白糖','5g','0.2']]},
+ {id:'s13',name:'红烧茄子',cat:'素菜',emoji:'🍆',ings:[['茄子','400g','6'],['肉末','80g','4'],['豆瓣酱','20g','0.6'],['蒜末','10g','0.3'],['生抽','15ml','0.5'],['食用油','300ml（实耗40ml）','2.4']]},
+ {id:'s14',name:'蚂蚁上树',cat:'素菜',emoji:'🍝',ings:[['粉丝','100g','3'],['肉末','100g','5'],['豆瓣酱','20g','0.6'],['生抽','15ml','0.5'],['葱花','10g','0.3'],['食用油','20ml','0.6']]},
+ {id:'s15',name:'醋溜白菜',cat:'素菜',emoji:'🥬',ings:[['大白菜','500g','4'],['干辣椒','8g','1'],['花椒','3g','0.5'],['香醋','20ml','1'],['白糖','5g','0.2'],['食用油','20ml','0.6']]},
+ {id:'s16',name:'松仁玉米',cat:'素菜',emoji:'🌽',ings:[['甜玉米粒','300g','5'],['松仁','60g','18'],['青豆','100g','2'],['胡萝卜','80g','1'],['黄油','15g','2'],['白糖','8g','0.3']]},
+ {id:'s17',name:'香椿炒蛋',cat:'素菜',emoji:'🍳',ings:[['香椿','150g','9'],['鸡蛋','3个','3'],['盐','3g','0.1'],['食用油','20ml','0.6']]},
+ {id:'s18',name:'红烧腐竹',cat:'素菜',emoji:'🥢',ings:[['干腐竹','120g','6'],['木耳','60g（泡发）','2'],['胡萝卜','80g','1'],['生抽','15ml','0.5'],['蚝油','10g','0.5'],['食用油','20ml','0.6']]},
+
+ /* ===== 汤羹 ===== */
+ {id:'t1',name:'番茄蛋花汤',cat:'汤羹',emoji:'🍲',ings:[['番茄','300g','4.5'],['鸡蛋','2个','2'],['葱花','10g','0.3'],['盐','4g','0.1'],['香油','5ml','0.3'],['食用油','10ml','0.3']]},
+ {id:'t2',name:'紫菜蛋花汤',cat:'汤羹',emoji:'🥣',ings:[['紫菜','15g','2'],['鸡蛋','2个','2'],['虾皮','15g','2'],['香油','5ml','0.3'],['盐','3g','0.1'],['葱花','5g','0.2']]},
+ {id:'t3',name:'玉米排骨汤',cat:'汤羹',emoji:'🍖',ings:[['排骨','400g','30'],['玉米','2根','6'],['胡萝卜','200g','2.5'],['姜片','15g','0.4'],['料酒','15ml','0.5'],['盐','4g','0.1']]},
+ {id:'t4',name:'冬瓜排骨汤',cat:'汤羹',emoji:'🥣',ings:[['排骨','400g','30'],['冬瓜','500g','4'],['姜片','15g','0.4'],['料酒','15ml','0.5'],['枸杞','8g','1'],['盐','4g','0.1']]},
+ {id:'t5',name:'香菇鸡汤',cat:'汤羹',emoji:'🍗',ings:[['鸡架','1个','12'],['干香菇','50g','5'],['枸杞','10g','1.2'],['红枣','40g','2'],['姜片','15g','0.4'],['盐','4g','0.1']]},
+ {id:'t6',name:'豆腐菌菇汤',cat:'汤羹',emoji:'🍄',ings:[['嫩豆腐','250g','4'],['金针菇','200g','4'],['青菜','150g','2'],['香油','5ml','0.3'],['盐','3g','0.1'],['葱花','5g','0.2']]},
+ {id:'t7',name:'西湖牛肉羹',cat:'汤羹',emoji:'🥩',ings:[['牛肉末','150g','12'],['嫩豆腐','200g','3'],['鸡蛋清','1个','0.5'],['香菇','60g','2.4'],['香菜','15g','0.5'],['淀粉','15g','0.4'],['盐','3g','0.1']]},
+ {id:'t8',name:'酸辣汤',cat:'汤羹',emoji:'🌶️',ings:[['嫩豆腐','200g','3'],['木耳','50g（泡发）','1.5'],['胡萝卜','60g','0.8'],['鸡蛋','1个','1'],['香醋','20ml','1'],['白胡椒','3g','0.5'],['淀粉','15g','0.4'],['香油','5ml','0.3']]},
+ {id:'t9',name:'萝卜牛腩汤',cat:'汤羹',emoji:'🥩',ings:[['牛腩','400g','44'],['白萝卜','400g','3'],['姜片','15g','0.4'],['料酒','20ml','0.6'],['八角','1颗','0.3'],['盐','4g','0.1']]},
+ {id:'t10',name:'山药排骨汤',cat:'汤羹',emoji:'🍖',ings:[['排骨','400g','30'],['铁棍山药','300g','9'],['枸杞','10g','1.2'],['姜片','15g','0.4'],['盐','4g','0.1']]},
+
+ /* ===== 主食 ===== */
+ {id:'m1',name:'蛋炒饭',cat:'主食',emoji:'🍚',ings:[['米饭','350g','2'],['鸡蛋','2个','2'],['青豆','60g','1'],['玉米粒','60g','1'],['火腿丁','60g','2.5'],['葱花','10g','0.3'],['食用油','20ml','0.6']]},
+ {id:'m2',name:'扬州炒饭',cat:'主食',emoji:'🍚',ings:[['米饭','350g','2'],['虾仁','100g','13'],['鸡蛋','2个','2'],['火腿丁','60g','2.5'],['青豆玉米','120g','2'],['葱花','10g','0.3'],['食用油','20ml','0.6']]},
+ {id:'m3',name:'西红柿鸡蛋面',cat:'主食',emoji:'🍜',ings:[['面条','250g','4'],['番茄','300g','4.5'],['鸡蛋','2个','2'],['番茄酱','15g','0.8'],['白糖','5g','0.2'],['食用油','15ml','0.4']]},
+ {id:'m4',name:'炸酱面',cat:'主食',emoji:'🍜',ings:[['面条','250g','4'],['肉末','150g','8'],['甜面酱','40g','2.5'],['黄瓜丝','150g','2'],['葱花','10g','0.3'],['食用油','20ml','0.6']]},
+ {id:'m5',name:'葱油拌面',cat:'主食',emoji:'🍜',ings:[['面条','250g','4'],['小葱','80g','2'],['生抽','25ml','0.8'],['老抽','5ml','0.3'],['白糖','5g','0.2'],['食用油','30ml','0.9']]},
+ {id:'m6',name:'手工水饺',cat:'主食',emoji:'🥟',ings:[['饺子皮','400g','6'],['猪肉馅','300g','21'],['韭菜','150g','3'],['鸡蛋','1个','1'],['姜末','10g','0.3'],['香油','5ml','0.3'],['盐','4g','0.1']]},
+ {id:'m7',name:'韭菜盒子',cat:'主食',emoji:'🫓',ings:[['面粉','300g','2'],['韭菜','250g','5'],['鸡蛋','3个','3'],['粉丝','50g','1.5'],['食用油','25ml','0.8']]},
+ {id:'m8',name:'葱花饼',cat:'主食',emoji:'🫓',ings:[['面粉','300g','2'],['小葱','80g','2'],['食用油','25ml','0.8'],['盐','4g','0.1'],['五香粉','2g','0.3']]},
+ {id:'m9',name:'小米粥',cat:'主食',emoji:'🥣',ings:[['小米','150g','3.5'],['红枣','40g','2'],['枸杞','8g','1'],['水','1000ml','0']]},
+ {id:'m10',name:'皮蛋瘦肉粥',cat:'主食',emoji:'🥣',ings:[['大米','150g','2.5'],['瘦肉','150g','8'],['皮蛋','2个','4'],['姜丝','10g','0.3'],['葱花','10g','0.3'],['盐','4g','0.1']]},
+
+ /* ===== 凉菜 ===== */
+ {id:'l1',name:'凉拌木耳',cat:'凉菜',emoji:'🥗',ings:[['干木耳','50g（泡发）','3'],['蒜末','15g','0.4'],['香菜','20g','0.6'],['香醋','20ml','1'],['生抽','15ml','0.5'],['香油','10ml','0.5'],['辣椒油','10ml','0.5']]},
+ {id:'l2',name:'拍黄瓜',cat:'凉菜',emoji:'🥒',ings:[['黄瓜','400g','4'],['蒜末','15g','0.4'],['香油','10ml','0.5'],['香醋','15ml','0.8'],['生抽','10ml','0.3'],['辣椒油','10ml','0.5'],['盐','3g','0.1']]},
+ {id:'l3',name:'皮蛋豆腐',cat:'凉菜',emoji:'🥣',ings:[['嫩豆腐','400g','6'],['皮蛋','2个','4'],['生抽','25ml','0.8'],['香醋','10ml','0.5'],['蒜末','10g','0.3'],['香油','5ml','0.3'],['葱花','5g','0.2']]},
+ {id:'l4',name:'凉拌海带丝',cat:'凉菜',emoji:'🥗',ings:[['干海带丝','100g（泡发）','4'],['蒜末','15g','0.4'],['香醋','20ml','1'],['生抽','15ml','0.5'],['香油','10ml','0.5'],['白糖','5g','0.2']]},
+ {id:'l5',name:'白切鸡',cat:'凉菜',emoji:'🍗',ings:[['三黄鸡','半只约700g','45'],['姜片','20g','0.5'],['葱段','30g','0.8'],['料酒','20ml','0.6'],['蘸料生抽','30ml','1'],['姜葱蓉','30g','1'],['食用油','15ml','0.4']]},
+ {id:'l6',name:'卤牛肉',cat:'凉菜',emoji:'🥩',ings:[['牛腱','600g','66'],['卤料包','1包','5'],['生抽','50ml','1.5'],['老抽','15ml','0.5'],['料酒','30ml','1'],['冰糖','15g','0.5'],['姜片','20g','0.5']]},
+ {id:'l7',name:'凉拌腐竹',cat:'凉菜',emoji:'🥢',ings:[['干腐竹','120g','6'],['黄瓜','200g','2'],['蒜末','15g','0.4'],['香油','10ml','0.5'],['香醋','15ml','0.8'],['辣椒油','10ml','0.5'],['盐','3g','0.1']]},
+ {id:'l8',name:'口水鸡',cat:'凉菜',emoji:'🍗',ings:[['鸡腿','2只约500g','22'],['花椒油','15ml','2'],['辣椒油','20ml','1'],['花生碎','30g','2'],['蒜末','15g','0.4'],['香醋','15ml','0.8'],['生抽','25ml','0.8'],['白糖','5g','0.2']]},
+];
+
+const CATS=[['荤菜','🍖'],['素菜','🥬'],['汤羹','🍲'],['主食','🍚'],['凉菜','🥗']];
+const COLORS=['linear-gradient(135deg,#FFB347,#FFD56B)','linear-gradient(135deg,#7FC8A9,#A8DCC4)','linear-gradient(135deg,#FF8FA3,#FFB3C1)','linear-gradient(135deg,#B5A6E6,#C9BEF0)','linear-gradient(135deg,#8EC5E8,#A9D6EE)'];
+
+const menuMap={};
+MENU.forEach(d=>{
+  const total=d.ings.reduce((s,c)=>s+Number(c[2]),0);
+  d.price=Math.round(total*10)/10;
+  menuMap[d.id]=d;
+});
+
+let cart={},curCat='荤菜',role='cust',orders=JSON.parse(localStorage.getItem('xfOrders')||'[]');
+
+function renderCats(){
+  document.getElementById('cats').innerHTML=CATS.map((c,i)=>
+    `<button class="cat ${c[0]===curCat?'on':''}" data-c="${c[0]}" style="${c[0]===curCat?`background:${COLORS[i%COLORS.length]}`:''}">
+       <span class="ci">${c[1]}</span>${c[0]}
+     </button>`).join('');
+  document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{curCat=b.dataset.c;renderCats();renderList();});
+}
+
+function renderList(){
+  const items=MENU.filter(d=>d.cat===curCat);
+  const box=document.getElementById('list');
+  if(!items.length){box.innerHTML='<div class="empty"><span class="big">🐰</span>这道菜还在学做呢～</div>';return;}
+  box.innerHTML=`<div class="sec-title">${CATS.find(c=>c[0]===curCat)[1]} ${curCat} <span>· 共 ${items.length} 道</span></div>`+
+    items.map(d=>{
+      const q=cart[d.id]||0;
+      const costStr=d.ings.map(c=>`<b>${c[0]}</b>${c[1]}(￥${c[2]})`).join(' + ');
+      const chips=d.ings.map(c=>`<span class="ing-chip">${c[0]} ${c[1]}</span>`).join('');
+      return `<div class="dish ${q>0?'bump':''}">
+        <div class="dish-top">
+          <div class="thumb" style="background:${COLORS[CATS.findIndex(c=>c[0]===d.cat)%COLORS.length]}">${d.emoji}</div>
+          <div class="info">
+            <h3>${d.name}</h3>
+            <div class="cost-line">${costStr}</div>
+            <div class="ings">${chips}</div>
+            <div class="price-row"><span class="yen">￥</span><span class="num">${d.price}</span><span class="unit">配料成本合计</span></div>
+          </div>
+        </div>
+        <div class="qty" style="margin:12px 0 0 auto;">
+          <button onclick="add('${d.id}',-1)">−</button>
+          <span class="n">${q}</span>
+          <button onclick="add('${d.id}',1)">＋</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function add(id,delta){
+  const n=(cart[id]||0)+delta;
+  if(n<=0)delete cart[id];else cart[id]=n;
+  renderList();renderCart();
+}
+
+function renderCart(){
+  const ids=Object.keys(cart).filter(k=>cart[k]>0);
+  const inner=document.getElementById('cartInner');
+  if(!ids.length){inner.classList.add('hidden');return;}
+  inner.classList.remove('hidden');
+  const total=ids.reduce((s,id)=>s+cart[id]*menuMap[id].price,0);
+  const cnt=ids.reduce((s,id)=>s+cart[id],0);
+  document.getElementById('cartBadge').textContent=cnt;
+  document.getElementById('cartTtl').textContent=`已选 ${cnt} 份`;
+  document.getElementById('cartSub').textContent=ids.map(id=>`${menuMap[id].emoji}${menuMap[id].name}×${cart[id]}`).join('、');
+  document.getElementById('cartTotal').textContent='￥'+Math.round(total*10)/10;
+}
+
+document.querySelectorAll('.rolebtn').forEach(b=>b.onclick=()=>{
+  role=b.dataset.role;
+  document.querySelectorAll('.rolebtn').forEach(x=>x.classList.toggle('on',x===b));
+  document.getElementById('custView').style.display=role==='cust'?'flex':'none';
+  document.getElementById('kitView').classList.toggle('show',role==='chef');
+  if(role==='chef')renderKitchen();
+});
+
+document.getElementById('submitBtn').onclick=()=>{
+  const ids=Object.keys(cart).filter(k=>cart[k]>0);
+  if(!ids.length)return;
+  document.getElementById('previewBox').innerHTML='<div class="oc-preview">'+
+    ids.map(id=>`<div class="row"><span>${menuMap[id].emoji} ${menuMap[id].name} ×${cart[id]}</span><span>￥${cart[id]*menuMap[id].price}</span></div>`).join('')+
+    `<div class="row total"><span>合计成本</span><span>￥${ids.reduce((s,id)=>s+cart[id]*menuMap[id].price,0)}</span></div></div>`;
+  document.getElementById('mask').classList.add('show');
+  document.getElementById('remark').value='';
+};
+document.getElementById('backBtn').onclick=()=>document.getElementById('mask').classList.remove('show');
+document.getElementById('sendBtn').onclick=()=>{
+  const ids=Object.keys(cart).filter(k=>cart[k]>0);
+  const items=ids.map(id=>({id,name:menuMap[id].name,emoji:menuMap[id].emoji,price:menuMap[id].price,qty:cart[id]}));
+  const total=items.reduce((s,i)=>s+i.qty*i.price,0);
+  const order={id:Date.now(),time:new Date().toLocaleString('zh-CN',{hour12:false}),items,total,remark:document.getElementById('remark').value.trim(),status:'new'};
+  orders.unshift(order);
+  localStorage.setItem('xfOrders',JSON.stringify(orders));
+  cart={};renderCart();renderList();
+  document.getElementById('mask').classList.remove('show');
+  ding();
+  if(role==='chef')renderKitchen();
+};
+
+function buildIngs(items){
+  const m={};
+  items.forEach(it=>{
+    for(let i=0;i<it.qty;i++)
+      (menuMap[it.id].ings||[]).forEach(([n])=>{m[n]=(m[n]||0)+1;});
+  });
+  return m;
+}
+function renderKitchen(){
+  const box=document.getElementById('kitBody');
+  if(!orders.length){box.innerHTML='<div class="empty"><span class="big">🍳</span>还没有新订单<br><small>让她点菜吧，会在这里响铃～</small></div>';return;}
+  box.innerHTML=orders.map(o=>{
+    const ings=buildIngs(o.items);
+    const ingRows=Object.keys(ings).length?Object.keys(ings).map(n=>`<div class="ing-row"><span>${n}</span><span class="amt">×${ings[n]}</span></div>`).join(''):'<div class="ing-row"><span>暂无食材明细</span></div>';
+    return `<div class="order-card ${o.status==='new'?'new':''}">
+      <div class="oc-head"><span class="oc-time">${o.time}</span>
+        <span class="oc-status ${o.status==='new'?'status-new':'status-done'}">${o.status==='new'?'🆕 待做':'✅ 已完成'}</span></div>
+      ${o.items.map(it=>`<div class="oc-item"><span>${it.emoji} ${it.name} ×${it.qty}</span><span>￥${it.qty*it.price}</span></div>`).join('')}
+      <div class="oc-item" style="border:none;font-weight:800;color:var(--pink);margin-top:4px;"><span>合计成本</span><span>￥${o.total}</span></div>
+      ${o.remark?`<div style="font-size:12px;opacity:.7;margin-top:6px;">💌 ${o.remark}</div>`:''}
+      <div class="ings-box"><h4>🧺 需要准备的食材（已合并去重）</h4>${ingRows}</div>
+      <div class="kc-foot">
+        ${o.status==='new'?`<button class="btn-done" onclick="finish(${o.id})">🍽️ 标记完成</button>`:''}
+        <button class="btn-del" onclick="del(${o.id})">🗑️ 删除</button>
+      </div>
+    </div>`;}).join('');
+}
+function finish(id){const o=orders.find(x=>x.id===id);if(o)o.status='done';localStorage.setItem('xfOrders',JSON.stringify(orders));renderKitchen();}
+function del(id){orders=orders.filter(x=>x.id!==id);localStorage.setItem('xfOrders',JSON.stringify(orders));renderKitchen();}
+
+function ding(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    [880,1046,1318].forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.frequency.value=f;o.type='sine';
+      g.gain.setValueAtTime(0,ctx.currentTime+i*0.28);
+      g.gain.linearRampToValueAtTime(0.3,ctx.currentTime+i*0.28+0.02);
+      g.gain.linearRampToValueAtTime(0,ctx.currentTime+i*0.28+0.22);
+      o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+i*0.28+0.25);
+    });
+  }catch(e){}
+}
+
+setInterval(()=>{
+  try{
+    const fresh=JSON.parse(localStorage.getItem('xfOrders')||'[]');
+    if(fresh.length!==orders.length){orders=fresh;if(role==='chef'){renderKitchen();ding();}}
+  }catch(e){}
+},1500);
+
+renderCats();renderList();renderCart();
+</script>
+</body>
+</html>
